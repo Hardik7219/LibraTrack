@@ -9,15 +9,23 @@ class Book
     int id;
     string book_title;
     bool issued;
+    int isUserHaveBook;
     public:
-    Book(string t,int id):id(id), book_title(t),issued(false){}
-    void issueBook()
+    Book(string t,int id):id(id), book_title(t),issued(false),isUserHaveBook(-1){}
+    void issueBook(int id)
     {
         issued=true;
+        isUserHaveBook=id;
+    }
+    void giveBackBook()
+    {
+        issued=false;
+        isUserHaveBook=-1;
     }
     int getId()const {return id;};
     string getTitle()const {return book_title;}
-    bool getIsIssued(){return issued;}
+    bool getIsIssued()const {return issued;}
+    int getIssuedUser()const {return isUserHaveBook;}
 };
 struct issuedBooksInfo
 {
@@ -29,20 +37,43 @@ class User
     protected:
     string user_name;
     int userId1;
-    vector<string> issuedBooks;
-    vector<int> issueBookId;    
     vector<issuedBooksInfo> issueBooks;
     public:
     User(string name,int id) : user_name(name),userId1(id){}
     int userId()const {return userId1;}
-    string userName()
+    string userName() const
     {
         return user_name;
     }
     void issued(string book,int id)
     {
+
         cout<<book<<" is issued by "<<user_name<<endl;
         issueBooks.push_back({book,id});
+    }
+    bool isBookIssued(int bookId)
+    {
+        for(auto& b : issueBooks)
+        {
+            if(b.id==bookId)
+                return true;
+        }
+        return false;
+    }
+    void returnBooks(int id)
+    {   
+        for(auto b= issueBooks.begin(); b!=issueBooks.end(); ++b)
+        {   
+
+            if(b->id==id)
+            {
+                issueBooks.erase(b);
+                cout<<id<<" Book is returned"<<endl;
+                break;
+            }
+        
+
+        }
     }
     const vector<issuedBooksInfo>& getIssuedBooks()const {return issueBooks;}
 };
@@ -72,8 +103,7 @@ class Library
     {
         for(auto &b : books)
         {
-            cout<<b.getId()<<" ";
-            cout<<b.getTitle()<<endl;
+            cout<<b.getId()<<" "<<"["<<b.getTitle()<<" :-"<<(b.getIsIssued() ? "Issued" : "Available")<<"]"<<endl;;
         }
     }
     void newUser(const string& user)
@@ -140,9 +170,61 @@ class Library
             cout<<"book does not exist"<<endl;
             return;
         }
-        
+        if(user->isBookIssued(bookId))
+        {
+            cout<<"User already has this book"<<endl;
+            return;
+        }
         user->issued(book->getTitle(),book->getId());
-        book->issueBook();
+        book->issueBook(userId);
+    }
+    void ReturnBookTolib(const int& userId,const int& bookId)
+    {
+        User* user=nullptr;
+        Book* book=nullptr;
+
+
+        for(auto &u : users)
+        {
+            if(u.userId()==userId)
+            {
+                user=&u;
+                break ;
+            }
+        }
+
+        if(!user)
+        {
+            cout<<"User does not exist"<<endl;
+            return;
+        }
+
+        for(auto &b : books)
+        {
+            if(b.getId()==bookId)
+            {
+                book=&b;
+                break ;
+            }
+        }
+        if(!book)
+        {
+            cout<<"book does not exist"<<endl;
+            return;
+        }
+        if(!book->getIsIssued())
+        {
+            cout<<"Book is not issued"<<endl;
+            return;
+        }
+        if(book->getIssuedUser() != userId)
+        {
+            cout << "This user did not issue the book" << endl;
+            return;
+        }
+        
+        user->returnBooks(book->getId());
+        book->giveBackBook();
     }
     void showTransations()
     {
@@ -154,7 +236,6 @@ class Library
             for(auto &b: users)
             {
             cout<<b.userName()<<":"<<endl<<"Books:-";
-
             for(const auto& u : b.getIssuedBooks())
             {
                 cout<<"["<<u.id<<"] "<<u.title;
@@ -201,8 +282,9 @@ int main()
     cout<<"3.Issue book"<<endl;
     cout<<"4.show Transastions"<<endl;
     cout<<"5.Add book"<<endl;
-    cout<<"6.show users"<<endl;
-    cout<<"7.Exit"<<endl;
+    cout<<"6.Return book"<<endl;
+    cout<<"7.show users"<<endl;
+    cout<<"8.Exit"<<endl;
 
     do{
         cout<<"Enter your choice:-"<<endl;
@@ -229,11 +311,19 @@ int main()
                 cin>>book;
                 l1.add_books(book);
                 break;
-            case 6:l1.showUsers();
+            case 6:
+                cout<<"Enter the UserId and BookId:-";
+                cin>>userId;
+                cin>>bookId;
+                l1.ReturnBookTolib(userId,bookId);
+                break;
+            case 7:l1.showUsers();
+            break;
+            case 8: cout<<"Exit"<<endl;
             break;
             default:cout<<"Enter valid choice"<<endl;
         }
 
-    }while(ch!=7);
+    }while(ch!=8);
     return 0;
 }
