@@ -10,15 +10,7 @@ A command-line library management system written in C++. LibraTrack lets you man
 - **Return Books**: Return issued books to the library
 - **Transactions**: View which books are issued to users (all users or specific user)
 
-## Project Structure
 
-```
-LibraTrack/
-├── library.cpp    # Main source (classes + program logic)
-├── output/        # Compiled executable
-│   └── library
-└── README.md
-```
 
 ## Classes
 

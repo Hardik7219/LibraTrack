@@ -92,7 +92,7 @@ class Library
         {
             if(b.getTitle()==book)
             {
-                cout<<"Book already exis"<<endl;
+                cout<<"Book already exist"<<endl;
                 return ;
             }
         }
